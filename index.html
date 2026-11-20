@@ -1,0 +1,500 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#92735c">
+<title>Kristine Joy Outfit Planner</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#faf6f1;color:#493b32}
+header{background:#92735c;color:white;padding:20px;text-align:center}
+header h1{margin:0;font-family:Georgia,serif}
+header p{margin:6px 0 0;font-size:13px}
+nav{display:flex;gap:7px;overflow-x:auto;padding:12px;background:#fff;position:sticky;top:0;z-index:5}
+nav button{border:0;background:#f2e9e1;color:#684f40;padding:11px 14px;border-radius:20px;white-space:nowrap;cursor:pointer}
+nav button.active,button.primary{background:#92735c;color:white}
+main{max-width:1000px;margin:auto;padding:18px}
+.page{display:none}.page.active{display:block}
+h2{font-family:Georgia,serif;color:#765944}
+.card{background:white;border-radius:16px;padding:17px;margin:12px 0;box-shadow:0 3px 12px #60452a12}
+input,select,textarea{width:100%;padding:12px;border:1px solid #e2d5c9;border-radius:9px;margin:6px 0 13px;font:inherit;background:#fff}
+label{font-size:13px;font-weight:bold;color:#715743}
+button{cursor:pointer;border:0;border-radius:9px;padding:10px 14px;font:inherit}
+.primary{background:#92735c;color:white}
+.secondary{background:#eee4db;color:#604b3c}
+.danger{background:#f8e3df;color:#a3473d}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.item-field{position:relative}
+.suggestions{display:none;position:absolute;top:75px;left:0;right:0;background:white;border:1px solid #e5d8cc;border-radius:10px;box-shadow:0 6px 15px #0002;z-index:10;max-height:220px;overflow:auto}
+.suggestion{padding:10px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f1e9e2}
+.suggestion:hover{background:#faf3ed}
+.suggestion-icon{font-size:24px;width:34px;text-align:center}
+.suggestion small{display:block;color:#987e69;margin-top:3px}
+.preview{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.preview-item{background:#f7f0e9;border-radius:12px;min-height:100px;padding:10px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.preview-item img{width:65px;height:65px;object-fit:cover;border-radius:9px}
+.preview-item .emoji{font-size:30px}
+.preview-item small{color:#947c68;margin-top:5px}
+.outfit-card{border:1px solid #eee1d5;border-radius:13px;padding:14px;margin:12px 0;background:white}
+.outfit-card h3{margin:5px 0;color:#765944}
+.outfit-card p{font-size:13px;line-height:1.6}
+.day-row{display:grid;grid-template-columns:100px 1fr;gap:10px;align-items:center;margin:10px 0}
+.day-row select{margin:0}
+.stat{background:#f1e6dc;border-radius:13px;padding:17px;text-align:center}
+.stat strong{font-size:25px;display:block;color:#795b44}
+.muted{color:#987f6d;font-size:13px}
+.empty{text-align:center;padding:25px;color:#9b8878}
+footer{text-align:center;color:#a18a77;font-size:12px;padding:25px}
+</style>
+</head>
+
+<body>
+<header>
+<h1>Kristine Joy</h1>
+<p>Outfit Planner · Plan your style every day</p>
+</header>
+
+<nav>
+<button class="active" onclick="showPage('home',this)">Home</button>
+<button onclick="showPage('create',this)">Create Outfit</button>
+<button onclick="showPage('outfits',this)">My Outfits</button>
+<button onclick="showPage('planner',this)">Weekly Planner</button>
+<button onclick="showPage('weather',this)">Weather</button>
+<button onclick="showPage('shopping',this)">Shopping List</button>
+</nav>
+
+<main>
+<section id="home" class="page active">
+<h2>Welcome to Your Outfit Planner ✨</h2>
+<p class="muted">Organize your clothes and plan what to wear for the week.</p>
+<div class="grid">
+<div class="stat"><strong id="totalOutfits">0</strong>Saved outfits</div>
+<div class="stat"><strong id="plannedDays">0</strong>Planned days</div>
+<div class="stat"><strong id="shoppingCount">0</strong>Shopping items</div>
+</div>
+<div class="card">
+<h3>✨ Outfit of the Week</h3>
+<div id="homeOutfit" class="empty">Start creating your first outfit!</div>
+<button class="primary" onclick="showPage('create')">Create an Outfit</button>
+</div>
+<div class="card">
+<h3>Quick Tips</h3>
+<p>• Choose clothes according to the weather.</p>
+<p>• Match your shoes and accessories with your outfit.</p>
+<p>• Plan your outfits before the week begins.</p>
+</div>
+</section>
+
+<section id="create" class="page">
+<h2>Create Your Outfit</h2>
+<div class="card">
+<input type="hidden" id="editId">
+<label>Outfit Name</label>
+<input id="outfitName" placeholder="Example: Casual Monday">
+
+<label>Occasion</label>
+<select id="occasion">
+<option>Casual</option><option>School</option><option>Work</option>
+<option>Formal</option><option>Party</option><option>Date</option>
+<option>Travel</option><option>Home</option><option>Outdoor</option>
+</select>
+
+<label>Color Theme</label>
+<input id="colorTheme" placeholder="Example: White and beige">
+
+<div class="grid" id="clothingFields"></div>
+
+<label>Notes</label>
+<textarea id="notes" rows="3" placeholder="Additional outfit details..."></textarea>
+
+<h3>Outfit Preview</h3>
+<div class="preview" id="outfitPreview"></div>
+
+<button class="primary" onclick="saveOutfit()">Save Outfit</button>
+<button class="secondary" onclick="resetForm()">Clear Form</button>
+</div>
+</section>
+
+<section id="outfits" class="page">
+<h2>My Outfits</h2>
+<input id="outfitSearch" placeholder="Search your saved outfits..." oninput="renderOutfits()">
+<div id="outfitList"></div>
+</section>
+
+<section id="planner" class="page">
+<h2>Weekly Planner</h2>
+<p class="muted">Choose an outfit for each day.</p>
+<div class="card" id="weeklyPlanner"></div>
+<button class="primary" onclick="savePlanner()">Save Weekly Planner</button>
+</section>
+
+<section id="weather" class="page">
+<h2>Weather Outfit Suggestions</h2>
+<div class="card">
+<label>Choose the weather</label>
+<select id="weatherType" onchange="showWeatherSuggestions()">
+<option value="sunny">Sunny / Hot</option>
+<option value="rainy">Rainy</option>
+<option value="cold">Cold / Windy</option>
+<option value="cloudy">Cloudy</option>
+</select>
+<div id="weatherSuggestions"></div>
+</div>
+</section>
+
+<section id="shopping" class="page">
+<h2>Shopping List</h2>
+<div class="card">
+<label>Item to buy</label>
+<input id="shoppingInput" placeholder="Example: White sneakers">
+<button class="primary" onclick="addShopping()">Add Item</button>
+</div>
+<div class="card" id="shoppingList"></div>
+</section>
+</main>
+
+<footer>Kristine Joy Outfit Planner © 2026</footer>
+
+<script>
+const categories=[
+ {key:"top",label:"Top",emoji:"👚"},
+ {key:"bottom",label:"Bottom",emoji:"👖"},
+ {key:"shoes",label:"Shoes",emoji:"👟"},
+ {key:"necklace",label:"Necklace",emoji:"📿"},
+ {key:"accessories",label:"Accessories",emoji:"👜"},
+ {key:"slippers",label:"Slippers",emoji:"🩴"}
+];
+
+const wardrobe={
+ top:[
+  ["T-shirt","👕"],["Sando","👚"],["Blouse","👚"],["Polo shirt","👔"],
+  ["Crop top","👚"],["Long-sleeve shirt","👕"],["Sweater","🧥"],
+  ["Cardigan","🧥"],["Jacket","🧥"],["Hoodie","🧥"]
+ ],
+ bottom:[
+  ["Jeans","👖"],["Straight-leg jeans","👖"],["Wide-leg jeans","👖"],
+  ["Skinny jeans","👖"],["Baggy jeans","👖"],["Trousers","👖"],
+  ["Slacks","👖"],["Shorts","🩳"],["Skirt","👗"],["Cargo pants","👖"]
+ ],
+ shoes:[
+  ["Sneakers","👟"],["Running shoes","👟"],["Flats","🥿"],
+  ["Heels","👠"],["Sandals","👡"],["Loafers","👞"],
+  ["Boots","🥾"],["Formal shoes","👞"]
+ ],
+ necklace:[
+  ["Pendant necklace","📿"],["Pearl necklace","📿"],
+  ["Chain necklace","📿"],["Choker","📿"],["Layered necklace","📿"],
+  ["Beaded necklace","📿"]
+ ],
+ accessories:[
+  ["Watch","⌚"],["Sunglasses","🕶️"],["Cap","🧢"],["Belt","🪢"],
+  ["Hair clip","🎀"],["Headband","🎀"],["Bracelet","📿"],
+  ["Earrings","💎"],["Ring","💍"],["Handbag","👜"],["Backpack","🎒"],
+  ["Umbrella","☂️"],["Scarf","🧣"]
+ ],
+ slippers:[
+  ["Flip-flops","🩴"],["Slides","🩴"],["House slippers","🩴"],
+  ["Rubber slippers","🩴"],["Platform slippers","🩴"]
+ ]
+};
+
+let outfits=JSON.parse(localStorage.getItem("kjOutfits")||"[]");
+let planner=JSON.parse(localStorage.getItem("kjPlanner")||"{}");
+let shopping=JSON.parse(localStorage.getItem("kjShopping")||"[]");
+let photos={};
+
+function showPage(id,btn){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+ if(btn)btn.classList.add("active");
+ refresh();
+}
+
+function createFields(){
+ const container=document.getElementById("clothingFields");
+ container.innerHTML="";
+ categories.forEach(cat=>{
+  const div=document.createElement("div");
+  div.className="item-field";
+  div.innerHTML=`
+   <label>${cat.emoji} ${cat.label}</label>
+   <input id="field_${cat.key}" placeholder="Search ${cat.label.toLowerCase()}..." autocomplete="off">
+   <div class="suggestions" id="suggest_${cat.key}"></div>
+   <input type="file" id="photo_${cat.key}" accept="image/*">
+   <small class="muted">Optional: Upload a photo</small>`;
+  container.appendChild(div);
+
+  const input=div.querySelector("#field_"+cat.key);
+  input.addEventListener("input",()=>showSuggestions(cat.key,input.value));
+  input.addEventListener("focus",()=>showSuggestions(cat.key,input.value));
+  document.getElementById("photo_"+cat.key).addEventListener("change",e=>handleImage(cat.key,e));
+ });
+}
+
+function showSuggestions(key,query){
+ const box=document.getElementById("suggest_"+key);
+ const list=wardrobe[key].filter(item=>item[0].toLowerCase().includes(query.toLowerCase()));
+ box.innerHTML="";
+ if(!list.length){
+  box.innerHTML='<div class="suggestion">No matching item. You can still use your own text.</div>';
+ }else{
+  list.forEach(item=>{
+   const div=document.createElement("div");
+   div.className="suggestion";
+   div.innerHTML=`<span class="suggestion-icon">${item[1]}</span><span>${item[0]}<small>${categories.find(c=>c.key===key).label}</small></span>`;
+   div.onclick=()=>{
+    document.getElementById("field_"+key).value=item[0];
+    box.style.display="none";
+    updatePreview();
+   };
+   box.appendChild(div);
+  });
+ }
+ box.style.display="block";
+}
+
+document.addEventListener("click",e=>{
+ if(!e.target.closest(".item-field")){
+  document.querySelectorAll(".suggestions").forEach(s=>s.style.display="none");
+ }
+});
+
+function handleImage(key,event){
+ const file=event.target.files[0];
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  photos[key]=reader.result;
+  updatePreview();
+ };
+ reader.readAsDataURL(file);
+}
+
+function updatePreview(){
+ const preview=document.getElementById("outfitPreview");
+ preview.innerHTML="";
+ categories.forEach(cat=>{
+  const value=document.getElementById("field_"+cat.key).value.trim();
+  const box=document.createElement("div");
+  box.className="preview-item";
+  if(photos[cat.key]){
+   const img=document.createElement("img");
+   img.src=photos[cat.key];
+   box.appendChild(img);
+  }else{
+   const emoji=document.createElement("div");
+   emoji.className="emoji";
+   const match=wardrobe[cat.key].find(x=>x[0].toLowerCase()===value.toLowerCase());
+   emoji.textContent=match?match[1]:cat.emoji;
+   box.appendChild(emoji);
+  }
+  const name=document.createElement("small");
+  name.textContent=value||cat.label;
+  box.appendChild(name);
+  preview.appendChild(box);
+ });
+}
+categories.forEach(cat=>{
+ document.addEventListener("input",e=>{
+  if(e.target.id==="field_"+cat.key)updatePreview();
+ });
+});
+
+function saveOutfit(){
+ const name=document.getElementById("outfitName").value.trim();
+ if(!name){alert("Please enter an outfit name.");return;}
+ const data={
+  id:document.getElementById("editId").value||String(Date.now()),
+  name,
+  occasion:document.getElementById("occasion").value,
+  color:document.getElementById("colorTheme").value,
+  notes:document.getElementById("notes").value,
+  items:{},photos:{...photos}
+ };
+ categories.forEach(cat=>{
+  data.items[cat.key]=document.getElementById("field_"+cat.key).value.trim();
+ });
+ const index=outfits.findIndex(o=>o.id===data.id);
+ if(index>=0)outfits[index]=data;
+ else outfits.push(data);
+ localStorage.setItem("kjOutfits",JSON.stringify(outfits));
+ alert("Your outfit has been saved!");
+ resetForm();
+ refresh();
+ showPage("outfits");
+}
+
+function resetForm(){
+ document.getElementById("editId").value="";
+ document.getElementById("outfitName").value="";
+ document.getElementById("occasion").value="Casual";
+ document.getElementById("colorTheme").value="";
+ document.getElementById("notes").value="";
+ photos={};
+ categories.forEach(cat=>{
+  document.getElementById("field_"+cat.key).value="";
+  document.getElementById("photo_"+cat.key).value="";
+ });
+ updatePreview();
+}
+
+function editOutfit(id){
+ const o=outfits.find(x=>x.id===id);
+ if(!o)return;
+ showPage("create");
+ document.getElementById("editId").value=o.id;
+ document.getElementById("outfitName").value=o.name;
+ document.getElementById("occasion").value=o.occasion;
+ document.getElementById("colorTheme").value=o.color||"";
+ document.getElementById("notes").value=o.notes||"";
+ photos={...(o.photos||{})};
+ categories.forEach(cat=>{
+  document.getElementById("field_"+cat.key).value=o.items[cat.key]||"";
+ });
+ updatePreview();
+}
+
+function deleteOutfit(id){
+ if(!confirm("Delete this outfit?"))return;
+ outfits=outfits.filter(o=>o.id!==id);
+ Object.keys(planner).forEach(day=>{if(planner[day]===id)delete planner[day]});
+ localStorage.setItem("kjOutfits",JSON.stringify(outfits));
+ localStorage.setItem("kjPlanner",JSON.stringify(planner));
+ refresh();
+}
+
+function renderOutfits(){
+ const list=document.getElementById("outfitList");
+ const q=(document.getElementById("outfitSearch")?.value||"").toLowerCase();
+ const filtered=outfits.filter(o=>(o.name+" "+o.occasion+" "+Object.values(o.items).join(" ")).toLowerCase().includes(q));
+ list.innerHTML="";
+ if(!filtered.length){list.innerHTML='<div class="empty">No outfits found. Create your first outfit!</div>';return;}
+ filtered.forEach(o=>{
+  const div=document.createElement("div");
+  div.className="outfit-card";
+  const details=categories.map(c=>o.items[c.key]?`${c.emoji} ${c.label}: ${o.items[c.key]}`:"").filter(Boolean).join("<br>");
+  div.innerHTML=`<h3>${escapeHTML(o.name)}</h3>
+   <span class="muted">${escapeHTML(o.occasion)} · ${escapeHTML(o.color||"No color theme")}</span>
+   <p>${details}<br>${escapeHTML(o.notes||"")}</p>
+   <button class="secondary" onclick="editOutfit('${o.id}')">Edit</button>
+   <button class="danger" onclick="deleteOutfit('${o.id}')">Delete</button>`;
+  list.appendChild(div);
+ });
+}
+
+const days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+function renderPlanner(){
+ const area=document.getElementById("weeklyPlanner");
+ area.innerHTML="";
+ days.forEach(day=>{
+  const row=document.createElement("div");
+  row.className="day-row";
+  const label=document.createElement("strong");
+  label.textContent=day;
+  const select=document.createElement("select");
+  select.id="day_"+day;
+  select.innerHTML='<option value="">Choose outfit</option>';
+  outfits.forEach(o=>{
+   const opt=document.createElement("option");
+   opt.value=o.id;opt.textContent=o.name;
+   select.appendChild(opt);
+  });
+  select.value=planner[day]||"";
+  row.append(label,select);
+  area.appendChild(row);
+ });
+}
+function savePlanner(){
+ days.forEach(day=>{
+  const el=document.getElementById("day_"+day);
+  planner[day]=el?el.value:"";
+  if(!planner[day])delete planner[day];
+ });
+ localStorage.setItem("kjPlanner",JSON.stringify(planner));
+ alert("Weekly planner saved!");
+ refresh();
+}
+
+function showWeatherSuggestions(){
+ const type=document.getElementById("weatherType").value;
+ const area=document.getElementById("weatherSuggestions");
+ const suggestions={
+  sunny:"Try a sando or T-shirt, shorts or a skirt, sandals, sunglasses, and a cap.",
+  rainy:"Try a comfortable top, jeans, rubber slippers or waterproof shoes, and bring an umbrella.",
+  cold:"Try a long-sleeve top, sweater or jacket, trousers, closed shoes, and a scarf.",
+  cloudy:"Try a T-shirt or blouse, jeans, sneakers, and a light jacket."
+ };
+ area.innerHTML=`<div class="card"><h3>Suggested Outfit</h3><p>${suggestions[type]}</p></div>`;
+ const matches=outfits.filter(o=>{
+  const text=Object.values(o.items).join(" ").toLowerCase();
+  if(type==="sunny")return /sando|t-shirt|shorts|skirt|sandals|sunglasses|cap/.test(text);
+  if(type==="rainy")return /jacket|jeans|rubber slippers|umbrella/.test(text);
+  if(type==="cold")return /sweater|jacket|long-sleeve|trousers|scarf|boots/.test(text);
+  return /jeans|sneakers|blouse|jacket/.test(text);
+ });
+ if(matches.length){
+  area.innerHTML+="<h3>Your Saved Outfit Matches</h3>";
+  matches.forEach(o=>area.innerHTML+=`<div class="outfit-card">${escapeHTML(o.name)} <span class="muted">(${escapeHTML(o.occasion)})</span></div>`);
+ }
+}
+
+function addShopping(){
+ const input=document.getElementById("shoppingInput");
+ const value=input.value.trim();
+ if(!value)return;
+ shopping.push({id:String(Date.now()),name:value,done:false});
+ input.value="";
+ saveShopping();
+}
+function saveShopping(){
+ localStorage.setItem("kjShopping",JSON.stringify(shopping));
+ renderShopping();
+}
+function renderShopping(){
+ const area=document.getElementById("shoppingList");
+ area.innerHTML="";
+ if(!shopping.length){area.innerHTML='<div class="empty">Your shopping list is empty.</div>';return;}
+ shopping.forEach(item=>{
+  const row=document.createElement("div");
+  row.className="suggestion";
+  const check=document.createElement("input");
+  check.type="checkbox";check.style.width="auto";check.checked=item.done;
+  check.onchange=()=>{item.done=check.checked;saveShopping()};
+  const name=document.createElement("span");
+  name.textContent=item.name;
+  if(item.done)name.style.textDecoration="line-through";
+  const del=document.createElement("button");
+  del.className="danger";del.textContent="Delete";
+  del.onclick=()=>{shopping=shopping.filter(x=>x.id!==item.id);saveShopping()};
+  row.append(check,name,del);
+  area.appendChild(row);
+ });
+}
+
+function escapeHTML(value){
+ return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function refresh(){
+ document.getElementById("totalOutfits").textContent=outfits.length;
+ document.getElementById("plannedDays").textContent=Object.keys(planner).length;
+ document.getElementById("shoppingCount").textContent=shopping.length;
+ renderOutfits();
+ renderPlanner();
+ renderShopping();
+ const home=document.getElementById("homeOutfit");
+ const latest=outfits[outfits.length-1];
+ home.innerHTML=latest?`<h3>${escapeHTML(latest.name)}</h3><p>${escapeHTML(latest.occasion)} · ${escapeHTML(latest.color||"")}</p>`:"Start creating your first outfit!";
+}
+
+createFields();
+updatePreview();
+refresh();
+showWeatherSuggestions();
+</script>
+</body>
+</html>
