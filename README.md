@@ -20,6 +20,19 @@ The Kristine Joy Outfit Planner helps users create outfits, save them, plan what
 4. Weekly Planner - Assign outfits for Monday to Sunday
 5. Weather Suggestions - Get outfit suggestions based on weather (Sunny, Rainy, Cold, Cloudy)
 6. Shopping List - Add and manage items to buy
+## Screenshots
+
+### Home
+![Home](screenshot-home.png.jpg)
+
+### Create Outfit
+![Create Outfit](screenshot-create.png.jpg)
+
+### Weekly Planner
+![Weekly Planner](screenshot-weekly.png.jpg)
+
+### Weather Suggestions
+![Weather](screenshot-weather.png.jpg)
 
 ## How to Install and Run
 
